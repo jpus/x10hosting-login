@@ -1,0 +1,33 @@
+name: x10hosting Login
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 12 * * 5'  # 每周五晚上8点
+
+jobs:
+  login:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+      
+      - name: Install
+        run: |
+          pip install playwright requests
+          playwright install firefox
+          
+      - name: Set up WARP
+        uses: fscarmen/warp-on-actions@v1.4
+        with:
+          stack: dual        # Optional. Support [ ipv4, ipv6, dual ]. Default is dual.
+          mode: wireguard    # Optional. Support [ wireguard, client ]. Default is wireguard.    
+      
+      - name: Run
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+          WEBHOST: ${{ secrets.WEBHOST }}
+        run: python login_script.py
